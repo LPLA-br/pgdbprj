@@ -54,13 +54,27 @@ BEGIN
 END;
 $$LANGUAGE PLPGSQL;
 
+CREATE OR REPLACE FUNCTION tratamentolinguas()
+RETURNS TRIGGER AS $$
+BEGIN
+	--impor restrição de línguas que tenha apenas mais de 25% de uso
+	IF NEW.percentage < 25.0 THEN
+		RAISE EXCEPTION 'línguas com menos de 25% de uso não podem mais serem inseridas';
+	ELSE IF NEW.percentage IS NULL THEN
+		RAISE EXCEPTION 'ERRO: não é admitido porcentagem de uso nula';
+	END IF;
+	RETURN NEW;
+END;
+$$ LANGUAGE PLPGSQL;
 
 CREATE OR REPLACE TRIGGER populacaoglobalgatilho
-AFTER INSERT OR UPDATE OR DELETE ON country EXECUTE PROCEDURE atualizarpopulacaogeral();
+AFTER INSERT OR UPDATE OR DELETE ON country EXECUTE FUNCTION atualizarpopulacaogeral();
 
 CREATE OR REPLACE TRIGGER espectativavidaglobalgatilho
-AFTER INSERT OR UPDATE OR DELETE ON country EXECUTE PROCEDURE atualizarespectativavida();
+AFTER INSERT OR UPDATE OR DELETE ON country EXECUTE FUNCTION atualizarespectativavida();
 
 CREATE OR REPLACE TRIGGER cidademaispopulosagatilho
-AFTER INSERT OR UPDATE OR DELETE ON city EXECUTE PROCEDURE atualizarcidademaispopulosa();
+AFTER INSERT OR UPDATE OR DELETE ON city EXECUTE FUNCTION atualizarcidademaispopulosa();
 
+CREATE OR REPLACE TRIGGER lingua
+BEFORE INSERT OR UPDATE ON countrylanguage EXECUTE FUNCTION tratamentolinguas();

@@ -142,3 +142,22 @@ BEGIN
 END;
 $$
 LANGUAGE PLPGSQL;
+
+/* remove língua -> pais <- cidade  */
+CREATE OR REPLACE PROCEDURE obliterarnacao( IN codigopais CHAR(3) )
+AS $$
+BEGIN
+
+	DELETE FROM countrylanguage 
+	WHERE countrycode = codigopais;
+
+	DELETE FROM country
+	WHERE code = codigopais;
+
+	DELETE FROM city
+	WHERE countrycode = codigopais;
+
+
+END;
+$$
+LANGUAGE PLPGSQL;
