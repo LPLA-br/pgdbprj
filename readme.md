@@ -1,6 +1,6 @@
 # PROJETO FINAL PARA DISCIPLINA DE PROGRAMAÇÃO EM BANCO DE DADOS
 
-<h2> COMPONENTES DO TIME DE DESEVOLVIMENTO: </h2>
+<h2> COMPONENTES DO TIME DE DESENVOLVIMENTO: </h2>
 <ul>
     <li> Luiz Paulo de Lima Araújo </li>
     <li> José Edson da Silva Galdino </li>
