@@ -10,7 +10,7 @@
 
 
 <figure>
-    <img src="img/img.jpg" alt="diagramaER">
+    <img src="img/img.png" alt="diagramaER">
     <figcaption> Figura 01 - diagrama entidade relacionamento do projeto </figcaption>
 </figure>
 
