@@ -7,7 +7,7 @@ LPLA-br
 CREATE TABLE IF NOT EXISTS infomundo
 (
 	id SERIAL PRIMARY KEY,
-	populacaoglobal INT,
+	populacaoglobal BIGINT,
 	espectativavidaglobal INT,
 	cidademaispopulosa TEXT
 );
@@ -20,8 +20,8 @@ AS $$
 BEGIN
 	UPDATE infomundo SET populacaoglobal =
 	(
-		SELECT cast( sum( population ) AS INT ) FROM country
-		WHERE population IS NOT NULL
+		SELECT cast( sum( population ) AS BIGINT )
+		FROM country WHERE population IS NOT NULL
 	)
 	WHERE id = 1;
 	RETURN NULL;
@@ -59,7 +59,7 @@ CREATE OR REPLACE TRIGGER populacaoglobalgatilho
 AFTER INSERT OR UPDATE OR DELETE ON country EXECUTE PROCEDURE atualizarpopulacaogeral();
 
 CREATE OR REPLACE TRIGGER espectativavidaglobalgatilho
-AFTER INSERT OR UPDATE OR DELETE ON country EXECUTE PROCEDURE atualizarpopulacaogeral();
+AFTER INSERT OR UPDATE OR DELETE ON country EXECUTE PROCEDURE atualizarespectativavida();
 
 CREATE OR REPLACE TRIGGER cidademaispopulosagatilho
 AFTER INSERT OR UPDATE OR DELETE ON city EXECUTE PROCEDURE atualizarcidademaispopulosa();
