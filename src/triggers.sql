@@ -55,17 +55,21 @@ END;
 $$LANGUAGE PLPGSQL;
 
 CREATE OR REPLACE FUNCTION tratamentolinguas()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER AS $tratare$
 BEGIN
-	--impor restrição de línguas que tenha apenas mais de 25% de uso
-	IF NEW.percentage < 25.0 THEN
-		RAISE EXCEPTION 'línguas com menos de 25% de uso não podem mais serem inseridas';
-	ELSE IF NEW.percentage IS NULL THEN
+	IF NEW.percentage IS NULL THEN
 		RAISE EXCEPTION 'ERRO: não é admitido porcentagem de uso nula';
 	END IF;
+
+	--impor restrição de línguas que tenha apenas mais de 25% de uso
+	IF NEW.percentage < 25.0 THEN
+		RAISE EXCEPTION 'línguas com menos de 25 de uso não podem mais serem inseridas';
+	END IF;
+	
+
 	RETURN NEW;
 END;
-$$ LANGUAGE PLPGSQL;
+$tratare$ LANGUAGE PLPGSQL;
 
 CREATE OR REPLACE TRIGGER populacaoglobalgatilho
 AFTER INSERT OR UPDATE OR DELETE ON country EXECUTE FUNCTION atualizarpopulacaogeral();
