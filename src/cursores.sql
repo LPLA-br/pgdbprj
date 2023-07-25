@@ -1,63 +1,72 @@
-/****************************
+/*********************
  * CURSORES
  * Bartolomeu Rangel Dantas
  * 32/07
  *********************/
 
-select countrylanguage.Language, countrylanguage.Percentage, country.Population from countrylanguage join country on countrylanguage.CountryCode = country.Code;
-select * from country;
-select countrylanguage.Language, round(countrylanguage.Percentage*country.population/100,2) from countrylanguage join country on countrylanguage.CountryCode = country.Code where countrylanguage.Language = "Chinese";
-select countrylanguage.Language,round(countrylanguage.Percentage*country.population/100,0) as total from 
-countrylanguage join country on countrylanguage.CountryCode = country.Code order by countrylanguage.Language;
-select round(countrylanguage.Percentage*country.population/100,2) as total
-		from countrylanguage join country on countrylanguage.CountryCode = country.Code
-		where countrylanguage.Language = "English";
-DELIMITER $$
-CREATE PROCEDURE somaLanguage(x char(30),out soma float)
-BEGIN 
-	DECLARE total float DEFAULT 0;
-	DECLARE fimloop int DEFAULT 0;
-    
+--LINGUAGENS DE UM CONTINENTE QUE COMESSAM COM CERTA LETRA
+CREATE OR REPLACE FUNCTION letterslangs( IN nomecontinente TEXT, IN letra TEXT )
+RETURNS void AS
+$$
+DECLARE
+	linguagens CURSOR ( nomecontinentecursor TEXT, letracursor TEXT ) FOR
+	SELECT *
+	FROM countrylanguage
+	WHERE countrycode IN
+	(
+		SELECT code
+		FROM country
+		WHERE continent = nomecontinentecursor
+	) AND LEFT(language,1) = letracursor ;
 
-	DECLARE meucursor CURSOR FOR select round(countrylanguage.Percentage*country.population/100,2) as total
-		from countrylanguage join country on countrylanguage.CountryCode = country.Code
-		where countrylanguage.Language = x;
-	DECLARE CONTINUE HANDLER FOR NOT FOUND SET fimloop = 1;
+	lingua countrylanguage%ROWTYPE;
+BEGIN
+	OPEN linguagens( $1, $2 );
 
-	SET soma = 0;
+	LOOP
+		FETCH NEXT FROM linguagens INTO lingua;
 
-	OPEN meucursor;
-	WHILE(fimloop !=1) DO
-		FETCH meucursor into total;
-		SET soma = soma + total;
-	END WHILE;
-END $$
-DELIMITER ;
-call somaLanguage("Chinese",@ret);
-select @ret;
+		IF lingua IS NULL THEN
+			EXIT;
+		END IF;
 
-SELECT LifeExpectancy, Name FROM country where Continent = "Europe" and LifeExpectancy is not null;
-DELIMITER $$
-CREATE PROCEDURE MediaLife(x char(30),out soma float)
-BEGIN 
-	DECLARE total float DEFAULT 0;
-	DECLARE fimloop int DEFAULT 0;
-    declare count int default 0;
-    
+		RAISE NOTICE '%', lingua.language;
+	END LOOP;
 
-	DECLARE Mediacursor CURSOR FOR SELECT LifeExpectancy as total FROM country where Continent = x and LifeExpectancy is not null;
-	DECLARE CONTINUE HANDLER FOR NOT FOUND SET fimloop = 1;
+	CLOSE linguagens;
+END;
+$$
+LANGUAGE PLPGSQL;
 
-	SET soma = 0;
+--SUPERFICIE DOS PAISES DE UM CONTINENTE.
+CREATE OR REPLACE FUNCTION surfacecontinent( IN nomecontinente TEXT )
+RETURNS void AS $$
+DECLARE
+	area REFCURSOR;
+	tmp REAL := 0;
+	areatotal REAL := 0;
+BEGIN
+	OPEN area FOR
+	SELECT surfacearea
+	FROM country
+	WHERE continent = $1
+	AND surfacearea IS NOT NULL;
 
-	OPEN Mediacursor;
-	WHILE(fimloop !=1) DO
-		FETCH Mediacursor into total;
-		SET soma = soma + total;
-        set count = count + 1;
-	END WHILE;
-    set soma = soma/count;
-END $$
-DELIMITER ;
-call MediaLife("South America",@ret);
-select @ret;
+	LOOP
+		FETCH NEXT FROM area INTO tmp;
+
+		IF tmp IS NULL THEN
+			EXIT;
+		END IF;
+
+		areatotal = tmp + areatotal;
+
+	END LOOP;
+
+	RAISE NOTICE 'AREA DAS NACOES DO CONTINENTE % E %', $1, areatotal ;
+
+	CLOSE area;
+END;
+$$ LANGUAGE PLPGSQL;
+
+
